@@ -56,6 +56,10 @@ type Props = {
    */
     inputProps?: Object,
   /**
+   * Styling overrride for textInput's text
+   */
+    inputTextStyle?: Object,
+  /**
    * path of the label in tags objects
    */
     labelKey?: string,
@@ -63,6 +67,14 @@ type Props = {
    *  maximum number of lines of this component
    */
     numberOfLines: number,
+  /**
+   * The style of each line, {height: number, marginBottom: number}
+   */
+    lineStyle: Object,
+  /**
+   * Render method to override the given tag render.  Tag property can be either a string or an Object (if you are using the labelKey).
+   */
+   renderTag?: (props: Object, index: number, tag: *) => React.Element,
 };
 
 type State = {
@@ -94,8 +106,11 @@ class TagInput extends Component {
     tagTextColor: PropTypes.string,
     inputColor: PropTypes.string,
     inputProps: PropTypes.object,
+    inputTextStyle: PropTypes.object,
     labelKey: PropTypes.string,
     numberOfLines: PropTypes.number,
+    lineStyle: PropTypes.object,
+    renderTag: PropTypes.func,
   };
 
   props: Props;
@@ -116,6 +131,14 @@ class TagInput extends Component {
     tagTextColor: '#777777',
     inputColor: '#777777',
     numberOfLines: 2,
+    lineStyle: {height: 40, marginBottom: 0},
+    inputTextStyle: {
+      height: 36,
+      fontSize: 16,
+      flex: .6,
+      marginBottom: 6,
+      padding: 0,
+    },
   };
 
   measureWrapper = () => {
@@ -124,7 +147,9 @@ class TagInput extends Component {
 
     this.refs.wrapper.measure((ox, oy, w, /*h, px, py*/) => {
       this.wrapperWidth = w;
-      this.setState({ inputWidth: this.wrapperWidth });
+      if (this.state.inputWidth != this.wrapperWidth) {
+        this.setState({ inputWidth: this.wrapperWidth });
+      }
     });
   };
 
@@ -241,6 +266,9 @@ class TagInput extends Component {
   };
 
   _renderTag = (tag, index) => {
+    if (this.props.renderTag) {
+      return this.props.renderTag(this.props, index, tag);
+    }
     const { tagColor, tagTextColor } = this.props;
 
     return (
@@ -282,17 +310,16 @@ class TagInput extends Component {
 
     const inputProps = { ...defaultInputProps, ...this.props.inputProps };
 
-    const wrapperHeight = (lines - 1) * 40 + 36;
+    const wrapperHeight = lines * (this.props.lineStyle.height + this.props.lineStyle.marginBottom) + this.props.lineStyle.marginBottom;
 
     const width = inputWidth ? inputWidth : 400;
 
     return (
       <TouchableWithoutFeedback
         onPress={() => this.refs.tagInput.focus()}
-        onLayout={this.measureWrapper}
-        style={[styles.container]}>
+        onLayout={this.measureWrapper}>
         <View
-          style={[styles.wrapper,{height: wrapperHeight}]}
+          style={[styles.wrapper, this.props.style, {height: wrapperHeight}]}
           ref="wrapper"
           onLayout={this.measureWrapper}>
           <ScrollView
@@ -303,13 +330,13 @@ class TagInput extends Component {
           >
             <View style={styles.tagInputContainer}>
               {value.map((tag, index) => this._renderTag(tag, index))}
-              <View style={[styles.textInputContainer, { width: this.state.inputWidth }]}>
+              <View style={{ width: this.state.inputWidth, height: this.props.lineStyle.height }}>
                 <TextInput
                   ref="tagInput"
                   blurOnSubmit={false}
                   onKeyPress={this.onKeyPress}
                   value={text}
-                  style={[styles.textInput, {
+                  style={[this.props.inputTextStyle, {
                   width: width,
                   color: inputColor,
                 }]}
@@ -328,11 +355,7 @@ class TagInput extends Component {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
   wrapper: {
-    flex: 1,
     flexDirection: 'row',
     marginTop: 3,
     marginBottom: 2,
@@ -345,17 +368,6 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     flexWrap: 'wrap',
-  },
-  textInput: {
-    height: 36,
-    fontSize: 16,
-    flex: .6,
-    marginBottom: 6,
-    padding: 0,
-
-  },
-  textInputContainer: {
-    height: 36,
   },
   tag: {
     justifyContent: 'center',

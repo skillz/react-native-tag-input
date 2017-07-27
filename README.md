@@ -26,6 +26,9 @@ import TagInput from 'react-native-tag-input';
 | tagTextStyle | Styling overrride for tag's text component |
 | inputColor | Color of text input |
 | inputProps | Any misc. TextInput props (autofocus, returnKeyType, etc.) |
+| inputTextStyle | Styling overrride for textInput's text |
 | labelKey | String. Label key if tag is an object, (tag[labelKey]) |
 | numberOfLines | Number. Number of maximum lines of the tag input |
+| lineStyle | Object. The style of each line, {height: number, marginBottom: number} |
 | parseOnBlur | Boolean. If true, will check for tags on input blur |
+| renderTag | Function. Render method to override the given tag render.  Tag property can be either a string or an Object (if you are using the labelKey) |
