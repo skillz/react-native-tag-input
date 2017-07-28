@@ -133,6 +133,13 @@ class TagInput extends Component {
     inputColor: '#777777',
     numberOfLines: 2,
     lineStyle: {height: 40, marginBottom: 0},
+    inputTextStyle: {
+      height: 36,
+      fontSize: 16,
+      flex: .6,
+      marginBottom: 6,
+      padding: 0,
+    },
   };
 
   measureWrapper = () => {
