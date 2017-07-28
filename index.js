@@ -122,6 +122,7 @@ class TagInput extends Component {
   };
 
   wrapperWidth = width;
+  totalLines = 1;
 
   // scroll to bottom
   contentHeight: 0;
@@ -154,40 +155,65 @@ class TagInput extends Component {
     });
   };
 
-  calculateWidth = () => {
+  calculateMeasures = () => {
     setTimeout(() => {
-      if (!this.refs['tag' + (this.props.value.length - 1)])
+      if (!this.refs['tag' + (this.props.value.length - 1)] || !this.refs.tagContainer)
         return;
 
-      this.refs['tag' + (this.props.value.length - 1)].measureLayout(findNodeHandle(this.refs.tagContainer), (ox, oy, w, /*h, px, py*/) => {
-        const endPosOfTag = w + ox;
+      this.refs['tag' + (this.props.value.length - 1)].measureLayout(findNodeHandle(this.refs.tagContainer), (tagX, tagY, tagWidth, /*tagHeight, tagPX, tagPy*/) => {
+        const endPosOfTag = tagWidth + tagX;
         const margin = 3;
         const spaceLeft = this.wrapperWidth - endPosOfTag - margin - 10;
         const inputWidth = (spaceLeft < 100) ? this.wrapperWidth : spaceLeft - 10;
+        const lineHeight = this.props.lineStyle.height;
+
+        const oldTotalLines = this.totalLines;
+        this.totalLines = Math.floor((tagY + lineHeight) / lineHeight);
+
+        let lines = Math.min(this.totalLines, this.props.numberOfLines);
+        let completion = () => {};
 
         if (spaceLeft < 100) {
-          if (this.state.lines < this.props.numberOfLines) {
-            const lines = this.state.lines + 1;
-            this.setState({ inputWidth, lines });
+          this.totalLines = this.totalLines + 1;
+          if (lines < this.props.numberOfLines) {
+            lines = lines + 1;
           } else {
-            this.setState({ inputWidth }, () => this.scrollToBottom());
+            completion = ():* => this.scrollToBottom();
           }
-        } else {
-          this.setState({ inputWidth });
         }
+
+        if (oldTotalLines > this.totalLines) {
+          completion = ():* => {
+            if (this.totalLines * lineHeight > this.scrollViewHeight) {
+              this.refs.scrollView.scrollTo({
+                y: (this.totalLines * lineHeight) + this.props.lineStyle.marginBottom - this.scrollViewHeight,
+                animated: true,
+              });
+            } else {
+              this.refs.scrollView.scrollTo({
+                y: 0, animated: true,
+              });
+            }
+          };
+        }
+
+        this.setState({
+          inputWidth: inputWidth,
+          lines: lines,
+        }, completion);
       });
     }, 0);
   };
 
   componentDidMount() {
     setTimeout(() => {
-      this.calculateWidth();
+      this.calculateMeasures();
     }, 100);
   }
 
   componentDidUpdate(prevProps: Props, /*prevState*/) {
     if (prevProps.value.length != this.props.value.length || !prevProps.value) {
-      this.calculateWidth();
+      this.calculateMeasures();
     }
   }
 
@@ -212,6 +238,10 @@ class TagInput extends Component {
     const text = event.nativeEvent.text;
     this.setState({ text: text });
     this.parseTags();
+  };
+
+  onContentSizeChange = (width: number, height: number) => {
+    this.contentHeight = height;
   };
 
   parseTags = () => {
@@ -283,12 +313,10 @@ class TagInput extends Component {
     );
   };
 
-
-
   scrollToBottom = (animated: boolean = true) => {
     if (this.contentHeight > this.scrollViewHeight) {
       this.refs.scrollView.scrollTo({
-        y: this.contentHeight - this.scrollViewHeight,
+        y: this.contentHeight + this.props.lineStyle.marginBottom - this.scrollViewHeight,
         animated,
       });
     }
@@ -309,7 +337,7 @@ class TagInput extends Component {
 
     const inputProps = { ...defaultInputProps, ...this.props.inputProps };
 
-    const wrapperHeight = lines * (this.props.lineStyle.height + this.props.lineStyle.marginBottom) + this.props.lineStyle.marginBottom;
+    const wrapperHeight = lines * (this.props.lineStyle.height + (this.props.lineStyle.marginBottom / 2)) + this.props.lineStyle.marginBottom;
 
     const textInputWidth = inputWidth ? inputWidth : width;
 
@@ -325,7 +353,7 @@ class TagInput extends Component {
           <ScrollView
             ref='scrollView'
             style={styles.tagInputContainerScroll}
-            onContentSizeChange={(w, h) => this.contentHeight = h}
+            onContentSizeChange={this.onContentSizeChange}
             onLayout={ev => this.scrollViewHeight = ev.nativeEvent.layout.height}
           >
             <View style={styles.tagInputContainer}
