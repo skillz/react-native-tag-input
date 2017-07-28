@@ -133,13 +133,6 @@ class TagInput extends Component {
     inputColor: '#777777',
     numberOfLines: 2,
     lineStyle: {height: 40, marginBottom: 0},
-    inputTextStyle: {
-      height: 36,
-      fontSize: 16,
-      flex: .6,
-      marginBottom: 6,
-      padding: 0,
-    },
   };
 
   measureWrapper = () => {
@@ -147,8 +140,8 @@ class TagInput extends Component {
       return;
 
     this.refs.wrapper.measureLayout(findNodeHandle(this.refs.touchable), (ox, oy, w, /*h, px, py*/) => {
-      this.wrapperWidth = w;
-      if (this.state.inputWidth != this.wrapperWidth) {
+      this.wrapperWidth = Math.floor(w);
+      if (this.state.inputWidth <= 0 && this.state.inputWidth != this.wrapperWidth) {
         this.setState({ inputWidth: this.wrapperWidth });
       }
     });
@@ -311,11 +304,12 @@ class TagInput extends Component {
 
     const wrapperHeight = lines * (this.props.lineStyle.height + this.props.lineStyle.marginBottom) + this.props.lineStyle.marginBottom;
 
-    const width = inputWidth ? inputWidth : 400;
+    const textInputWidth = inputWidth ? inputWidth : width;
 
     return (
       <TouchableWithoutFeedback
         onPress={() => this.refs.tagInput.focus()}
+        ref={"touchable"}
         onLayout={this.measureWrapper}>
         <View
           style={[styles.wrapper, this.props.style, {height: wrapperHeight}]}
@@ -330,14 +324,14 @@ class TagInput extends Component {
             <View style={styles.tagInputContainer}
                   ref={'tagContainer'}>
               {value.map((tag, index) => this._renderTag(tag, index))}
-              <View style={{ width: this.state.inputWidth, height: this.props.lineStyle.height }}>
+              <View style={{ width: this.state.inputWidth, height: this.props.lineStyle.height}}>
                 <TextInput
                   ref="tagInput"
                   blurOnSubmit={false}
                   onKeyPress={this.onKeyPress}
                   value={text}
                   style={[this.props.inputTextStyle, {
-                  width: width,
+                  width: textInputWidth,
                   color: inputColor,
                 }]}
                   onBlur={this.onBlur}
