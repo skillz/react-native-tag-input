@@ -10,6 +10,7 @@ import {
   Dimensions,
   TouchableWithoutFeedback,
   ScrollView,
+  findNodeHandle,
 } from 'react-native';
 
 const { width } = Dimensions.get('window');
@@ -145,7 +146,7 @@ class TagInput extends Component {
     if (!this.refs.wrapper)
       return;
 
-    this.refs.wrapper.measure((ox, oy, w, /*h, px, py*/) => {
+    this.refs.wrapper.measureLayout(findNodeHandle(this.refs.touchable), (ox, oy, w, /*h, px, py*/) => {
       this.wrapperWidth = w;
       if (this.state.inputWidth != this.wrapperWidth) {
         this.setState({ inputWidth: this.wrapperWidth });
@@ -158,17 +159,15 @@ class TagInput extends Component {
       if (!this.refs['tag' + (this.props.value.length - 1)])
         return;
 
-      this.refs['tag' + (this.props.value.length - 1)].measure((ox, oy, w, /*h, px, py*/) => {
+      this.refs['tag' + (this.props.value.length - 1)].measureLayout(findNodeHandle(this.refs.tagContainer), (ox, oy, w, /*h, px, py*/) => {
         const endPosOfTag = w + ox;
         const margin = 3;
         const spaceLeft = this.wrapperWidth - endPosOfTag - margin - 10;
-
         const inputWidth = (spaceLeft < 100) ? this.wrapperWidth : spaceLeft - 10;
 
         if (spaceLeft < 100) {
           if (this.state.lines < this.props.numberOfLines) {
             const lines = this.state.lines + 1;
-
             this.setState({ inputWidth, lines });
           } else {
             this.setState({ inputWidth }, () => this.scrollToBottom());
@@ -328,7 +327,8 @@ class TagInput extends Component {
             onContentSizeChange={(w, h) => this.contentHeight = h}
             onLayout={ev => this.scrollViewHeight = ev.nativeEvent.layout.height}
           >
-            <View style={styles.tagInputContainer}>
+            <View style={styles.tagInputContainer}
+                  ref={'tagContainer'}>
               {value.map((tag, index) => this._renderTag(tag, index))}
               <View style={{ width: this.state.inputWidth, height: this.props.lineStyle.height }}>
                 <TextInput
