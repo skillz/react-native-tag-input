@@ -296,7 +296,7 @@ class TagInput extends Component {
 
   _renderTag = (tag, index) => {
     if (this.props.renderTag) {
-      return this.props.renderTag(this.props, index, tag);
+      return this.props.renderTag(this.props, index, this._getLabelValue(tag));
     }
     const { tagColor, tagTextColor } = this.props;
 
