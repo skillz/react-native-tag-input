@@ -21,6 +21,10 @@ type Props = {
    */
     onChange: (items: Array<any>) => void,
   /**
+   * A handler to be called when the text value of the TextInput changes
+   */
+    onTextChange: (text: string) => void,
+  /**
    * An array of tags
    */
     value: Array<any>,
@@ -222,6 +226,9 @@ class TagInput extends Component {
       return;
 
     const text = event.nativeEvent.text;
+    if (this.props.onTextChange) {
+      this.props.onTextChange(text);
+    }
     this.setState({ text: text });
     const lastTyped = text.charAt(text.length - 1);
 
