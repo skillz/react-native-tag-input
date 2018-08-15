@@ -67,6 +67,14 @@ type Props = {
    */
     inputTextStyle?: Object,
   /**
+   * Styling overrride for textInput's placeholder text
+   */
+    placeholder?: string,
+  /**
+   * Styling overrride for textInput's placeholder text color
+   */
+    placeholderTextColor?: string,
+  /**
    * path of the label in tags objects
    */
     labelKey?: string,
@@ -114,6 +122,8 @@ class TagInput extends Component {
     inputColor: PropTypes.string,
     inputProps: PropTypes.object,
     inputTextStyle: PropTypes.object,
+    placeholder: PropTypes.string,
+    placeholderTextColor: PropTypes.string,
     labelKey: PropTypes.string,
     numberOfLines: PropTypes.number,
     lineStyle: PropTypes.object,
@@ -374,6 +384,8 @@ class TagInput extends Component {
                   blurOnSubmit={false}
                   onKeyPress={this.onKeyPress}
                   value={text}
+                  placeholder={this.props.placeholder}
+                  placeholderTextColor={this.props.placeholderTextColor}
                   style={[this.props.inputTextStyle, {
                   width: textInputWidth,
                   color: inputColor,
