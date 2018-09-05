@@ -382,6 +382,7 @@ class TagInput extends Component {
                 <TextInput
                   ref="tagInput"
                   blurOnSubmit={false}
+                  allowFontScaling={false}
                   onKeyPress={this.onKeyPress}
                   value={text}
                   placeholder={this.props.placeholder}
